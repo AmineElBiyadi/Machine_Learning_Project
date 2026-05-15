@@ -59,11 +59,11 @@ Nous avons choisi le domaine de la **santé**, et plus précisément la **sécur
 
 | Critère | openFDA FAERS | Drug Enforcement | ClinicalTrials.gov |
 |---|---|---|---|
-| Volume de données (≥ 10 000 lignes) | ✅ Millions de rapports disponibles | ❌ < 10 000 rappels historiques au total | ✅ Suffisant mais extraction complexe |
-| Variable cible native et non artificielle | ✅ Champ `seriousnesshospitalization` natif | ✅ Champ `classification` natif | ⚠️ Variable cible mal documentée dans l'API |
-| Déséquilibre naturel des classes (5–25 %) | ✅ ~15 % d'hospitalisations naturellement | ⚠️ Class I trop majoritaire selon les périodes | ⚠️ Proportion d'essais terminés variable |
-| Richesse des features (≥ 8) | ✅ Patient, médicament, déclarant, réaction | ⚠️ Peu de variables exploitables | ✅ Riche mais structuration complexe |
-| Enjeu métier clair et mesurable | ✅ Pharmacovigilance, priorisation des revues | ✅ Mais enjeu moins granulaire | ⚠️ Enjeu métier moins immédiat |
+| Volume de données (≥ 10 000 lignes) |  Millions de rapports disponibles |  < 10 000 rappels historiques au total |  Suffisant mais extraction complexe |
+| Variable cible native et non artificielle |  Champ `seriousnesshospitalization` natif |  Champ `classification` natif |  Variable cible mal documentée dans l'API |
+| Déséquilibre naturel des classes (5–25 %) |  ~15 % d'hospitalisations naturellement |  Class I trop majoritaire selon les périodes |  Proportion d'essais terminés variable |
+| Richesse des features (≥ 8) |  Patient, médicament, déclarant, réaction |  Peu de variables exploitables |  Riche mais structuration complexe |
+| Enjeu métier clair et mesurable |  Pharmacovigilance, priorisation des revues |  Mais enjeu moins granulaire |  Enjeu métier moins immédiat |
 
 openFDA FAERS est la seule API réunissant toutes les contraintes du projet : volume suffisant, variable cible native, déséquilibre naturel, richesse des features, et pertinence métier directe en pharmacovigilance.
 
