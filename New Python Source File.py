@@ -3,17 +3,17 @@ data_collection.py
 ==================
 Collects drug adverse event reports from the openFDA FAERS API
 and builds a structured dataset for binary classification:
-    seriousnessdeath = 1  ->  death reported
-    seriousnessdeath = 0  ->  death not reported
+    seriousnesshospitalization = 1  ->  hospitalization reported
+    seriousnesshospitalization = 0  ->  hospitalization not reported
 
-Features extracted (11 total — 6 numeric, 5 categorical):
-    patient_age, patient_weight, nb_drugs, nb_reactions,
+Features extracted (10 total — 5 numeric, 5 categorical):
+    patient_age, nb_drugs, nb_reactions,
     worst_reaction_outcome, nb_suspect_drugs,
     patient_sex, reporter_qualification, route_of_admin,
     drug_characterization, country
 
 Target variable:
-    seriousnessdeath  ->  derived from the FDA seriousnessdeath flag
+    seriousnesshospitalization  ->  derived from the FDA seriousnesshospitalization flag
 
 Usage:
     python data_collection.py
@@ -96,9 +96,8 @@ def extract_features(report: dict) -> dict:
     Extract a flat dictionary of features from a single raw FDA report.
 
     Feature list:
-        Numeric (6):
+        Numeric (5):
             patient_age             — age of patient at reaction onset (years)
-            patient_weight          — patient weight in kg (often null — impute in Phase 2)
             nb_drugs                — total number of drugs listed in the report
             nb_reactions            — total number of distinct reactions listed
             worst_reaction_outcome  — worst outcome code across all reactions
@@ -119,9 +118,9 @@ def extract_features(report: dict) -> dict:
             country                 — ISO country code where the event occurred
 
         Target (1):
-            seriousnessdeath        -> 1=death reported,
-                                      0=death not reported
-                                      Derived from the FDA seriousnessdeath flag.
+            seriousnesshospitalization  -> 1=hospitalization reported,
+                                           0=hospitalization not reported
+                                           Derived from the FDA seriousnesshospitalization flag.
 
     Args:
         report: raw dict parsed from one FDA API result entry
@@ -129,8 +128,8 @@ def extract_features(report: dict) -> dict:
     Returns:
         Flat dict with all features + target
     """
-    patient  = report.get("patient", {})
-    drugs    = patient.get("drug", [])
+    patient   = report.get("patient", {})
+    drugs     = patient.get("drug", [])
     reactions = patient.get("reaction", [])
 
     # ── Number of suspect drugs (characterization = "1")
@@ -157,7 +156,6 @@ def extract_features(report: dict) -> dict:
     return {
         # ── Numeric features
         "patient_age":            patient.get("patientonsetage"),
-        "patient_weight":         patient.get("patientweight"),
         "nb_drugs":               len(drugs),
         "nb_reactions":           len(reactions),
         "worst_reaction_outcome": worst_outcome,
@@ -170,8 +168,8 @@ def extract_features(report: dict) -> dict:
         "drug_characterization":  primary_drug.get("drugcharacterization"),
         "country":                report.get("occurcountry"),
 
-        # Target variable: 1 when death is reported, otherwise 0.
-        "seriousnessdeath":       1 if str(report.get("seriousnessdeath", "")).strip() == "1" else 0
+        # ── Target variable: 1 when hospitalization is reported, otherwise 0.
+        "seriousnesshospitalization": 1 if str(report.get("seriousnesshospitalization", "")).strip() == "1" else 0
     }
 
 
@@ -199,7 +197,7 @@ def collect(total: int = TOTAL_TARGET) -> pd.DataFrame:
     skip = 0
     consecutive_errors = 0
 
-    print(f"Starting collection — target: {total} rows")
+    print(f"Starting collection - target: {total} rows")
     print(f"Batch size: {BATCH_SIZE} | Sleep: {SLEEP_BETWEEN_CALLS}s between calls\n")
 
     while len(rows) < total:
@@ -226,7 +224,7 @@ def collect(total: int = TOTAL_TARGET) -> pd.DataFrame:
             if len(rows) % SAVE_EVERY == 0:
                 partial_path = f"data/partial_{len(rows)}.csv"
                 pd.DataFrame(rows).to_csv(partial_path, index=False)
-                print(f"\n  Checkpoint saved → {partial_path}")
+                print(f"\n  Checkpoint saved -> {partial_path}")
 
             time.sleep(SLEEP_BETWEEN_CALLS)
 
@@ -269,23 +267,23 @@ if __name__ == "__main__":
     # ── 2. Save full dataset
     dataset_path = "data/dataset.csv"
     df.to_csv(dataset_path, index=False)
-    print(f"Full dataset saved → {dataset_path}")
+    print(f"Full dataset saved -> {dataset_path}")
 
     # ── 3. Save 100-row sample for quick verification (required by project.md)
     sample_path = "data/sample.csv"
     df.sample(n=min(100, len(df)), random_state=42).to_csv(sample_path, index=False)
-    print(f"Sample saved        → {sample_path}")
+    print(f"Sample saved        -> {sample_path}")
 
     # ── 4. Print class distribution (verify the imbalance)
-    print("\n── Target variable distribution ──")
-    counts = df["seriousnessdeath"].value_counts()
-    ratios = df["seriousnessdeath"].value_counts(normalize=True) * 100
-    print(f"  seriousnessdeath=1 (death reported)     : {counts.get(1, 0):>6}  ({ratios.get(1, 0):.1f}%)")
-    print(f"  seriousnessdeath=0 (death not reported) : {counts.get(0, 0):>6}  ({ratios.get(0, 0):.1f}%)")
-    print(f"  null / missing                          : {df['seriousnessdeath'].isna().sum():>6}")
+    print("\n-- Target variable distribution --")
+    counts = df["seriousnesshospitalization"].value_counts()
+    ratios = df["seriousnesshospitalization"].value_counts(normalize=True) * 100
+    print(f"  seriousnesshospitalization=1 (hospitalized)     : {counts.get(1, 0):>6}  ({ratios.get(1, 0):.1f}%)")
+    print(f"  seriousnesshospitalization=0 (not hospitalized) : {counts.get(0, 0):>6}  ({ratios.get(0, 0):.1f}%)")
+    print(f"  null / missing                                  : {df['seriousnesshospitalization'].isna().sum():>6}")
 
     # ── 5. Print missing value summary
-    print("\n── Missing values per feature ──")
+    print("\n-- Missing values per feature --")
     missing = df.isna().sum().sort_values(ascending=False)
     for col, n in missing.items():
         pct = n / len(df) * 100
