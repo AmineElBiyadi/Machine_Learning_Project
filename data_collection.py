@@ -26,6 +26,7 @@ Output:
 """
 
 import json
+import re
 import requests
 import time
 import logging
@@ -131,24 +132,49 @@ def save_raw_batch(skip: int, batch: dict) -> None:
         json.dump(batch, handle, ensure_ascii=False)
 
 
+def normalize_drug_name(drug_name: str) -> str:
+    name = drug_name.strip()
+    # Remove strength suffixes like -100, /10, mg, etc.
+    name = re.split(r"[\-\/\(\)]", name)[0].strip()
+    name = re.sub(r"\b\d+\s*(mg|ml|mcg|g|units?)\b", "", name, flags=re.IGNORECASE).strip()
+    return re.sub(r"\s+", " ", name)
+
+
 def get_label_query_candidates(primary_drug: dict) -> list[str]:
     candidates = []
     if primary_drug.get("medicinalproduct"):
         candidates.append(primary_drug["medicinalproduct"])
+        candidates.append(normalize_drug_name(primary_drug["medicinalproduct"]))
 
     openfda = primary_drug.get("openfda", {}) or {}
     for field in ("generic_name", "brand_name", "substance_name", "product_type"):
         value = openfda.get(field)
         if isinstance(value, list):
             candidates.extend(value)
+            candidates.extend(normalize_drug_name(v) for v in value if isinstance(v, str))
         elif isinstance(value, str) and value:
             candidates.append(value)
+            candidates.append(normalize_drug_name(value))
 
-    return [c.strip() for c in candidates if c and c.strip()]
+    normalized = []
+    for c in candidates:
+        if isinstance(c, str):
+            c = c.strip()
+            if c:
+                normalized.append(c)
+    return [c for c in dict.fromkeys(normalized)]
 
 
 def query_label_for_drug(drug_name: str) -> dict:
-    for field in ("openfda.generic_name", "openfda.brand_name", "openfda.substance_name"):
+    fields = (
+        "openfda.generic_name",
+        "openfda.brand_name",
+        "openfda.substance_name",
+        "generic_name",
+        "brand_name",
+        "substance_name"
+    )
+    for field in fields:
         try:
             params = {
                 "api_key": API_KEY,
@@ -166,6 +192,27 @@ def query_label_for_drug(drug_name: str) -> dict:
             continue
         except requests.RequestException:
             continue
+
+    # If exact label query failed, try a broader text search on the drug name.
+    for field in ("openfda.brand_name", "openfda.generic_name", "brand_name", "generic_name"):
+        try:
+            params = {
+                "api_key": API_KEY,
+                "search": f'{field}:"{drug_name}"',
+                "limit": 1
+            }
+            response = requests.get(LABEL_BASE_URL, params=params, timeout=15)
+            logging.info(f"LABEL BROAD GET drug={drug_name} field={field} | status={response.status_code} | url={response.url}")
+            response.raise_for_status()
+            data = response.json()
+            results = data.get("results", [])
+            if results:
+                return results[0]
+        except requests.HTTPError:
+            continue
+        except requests.RequestException:
+            continue
+
     return {}
 
 
