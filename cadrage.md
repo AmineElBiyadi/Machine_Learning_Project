@@ -115,15 +115,6 @@ Dans notre contexte de pharmacovigilance, le coût est clairement **asymétrique
 | **Faux négatif (FN)** | Le modèle prédit *pas d'hospitalisation* alors qu'il y en a une | Le rapport grave n'est pas priorisé → revue tardive → risque de signal de sécurité manqué → potentiellement des patients continuent à être exposés à un médicament dangereux | **Élevé** — risque sanitaire, responsabilité réglementaire, coût de signal manqué estimé à plusieurs dizaines de milliers d'euros (études de signal post-hoc, procédures réglementaires correctives, atteinte à la réputation de l'agence) |
 | **Faux positif (FP)** | Le modèle prédit *hospitalisation* alors qu'il n'y en a pas | Un rapport non-grave est inutilement priorisé → analyste perd ~30 min à le requalifier | **Faible** — surcharge de travail limitée, estimée à ~30 minutes × coût horaire analyste ≈ **15–30 €** par fausse alerte |
 
-### Ratio d'asymétrie estimé
-
-En hypothèse conservatrice :
-- Coût d'un **faux négatif** : ~ 50 000 € (signal de sécurité manqué, avec probabilité de conséquences réglementaires)
-- Coût d'un **faux positif** : ~ 25 € (temps analyste perdu)
-- **Ratio asymétrie** ≈ **2 000 : 1**
-
-Cette asymétrie massive justifie de **privilégier fortement le recall**, quitte à accepter une precision modérée (50 %), ce qui correspond à tolérer une fausse alerte pour chaque vrai positif détecté — un compromis largement acceptable au regard du ratio de coût.
-
 ---
 
 ## 5. Choix et justification des métriques
