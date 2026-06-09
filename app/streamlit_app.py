@@ -82,7 +82,7 @@ html, body,
     z-index: 0;
 }
 
-#MainMenu, footer, header { visibility: hidden; }
+#MainMenu, footer { visibility: hidden; }
 [data-testid="stDecoration"] { display: none; }
 .block-container {
     padding: 2.2rem 2.8rem !important;
