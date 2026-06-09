@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Python cache & virtual envs
+__pycache__
+*.py[cod]
+*$py.class
+.venv
+venv
+.env
+
+# Notebooks & dev artifacts
+notebooks/
+.ipynb_checkpoints/
+*.ipynb
+
+# Raw & processed data (not needed at inference)
+data/
+collection.log
+
+# Documentation & reports (not needed in image)
+*.md
+report/
+docs/
+assets/
+
+# IDE & OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info
+
+# Logs & caches
+*.log
+.cache
+pytest_cache
+.mypy_cache
+
+# Extra model artifacts (only final_model.joblib is required)
+models/best_model_tuned.joblib
+models/threshold_config.joblib
+models/tuned_rf_undersampling.joblib
+models/preprocessor.joblib
+
+# Scripts not used by the API
+scripts/
+data_collection.py
+project.md
