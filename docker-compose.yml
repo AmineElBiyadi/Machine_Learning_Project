@@ -16,3 +16,17 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    image: faers-hospitalization-ui:1.0.0
+    container_name: faers-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped

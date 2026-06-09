@@ -15,3 +15,4 @@ scipy==1.16.1
 
 # --- Data collection (optional, not required at runtime) ---
 requests==2.32.4
+streamlit>=1.30.0
