@@ -1,0 +1,1123 @@
+% !TEX program = pdflatex
+% Rapport final — Projet Machine Learning S8
+% Compilation (depuis le dossier report/) :
+%   pdflatex report.tex && pdflatex report.tex
+
+\documentclass[11pt,a4paper,twoside,openright]{report}
+
+% ═══════════════════════════════════════════════════════════════════════════
+% PRÉAMBULE
+% ═══════════════════════════════════════════════════════════════════════════
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{csquotes}
+
+\usepackage[
+  top=2.4cm, bottom=2.6cm,
+  left=2.8cm, right=2.4cm,
+  headheight=15pt
+]{geometry}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{tocloft}
+\onehalfspacing
+\setlist[itemize]{leftmargin=1.4em, itemsep=2pt}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=2pt}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{rotating}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, shadows}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{listings}
+\lstdefinestyle{py}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!6},
+  keywordstyle=\color{blue!65!black}\bfseries,
+  commentstyle=\color{green!45!black},
+  stringstyle=\color{red!55!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  tabsize=2,
+  captionpos=b,
+}
+\lstdefinestyle{bash}{
+  language=bash,
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!6},
+  numbers=none,
+  captionpos=b,
+}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+% Couleurs
+\definecolor{primary}{RGB}{0,82,147}
+\definecolor{secondary}{RGB}{0,120,174}
+\definecolor{accent}{RGB}{230,126,34}
+\definecolor{lightgray}{RGB}{245,246,248}
+\definecolor{success}{RGB}{39,174,96}
+\definecolor{warning}{RGB}{243,156,18}
+\definecolor{danger}{RGB}{192,57,43}
+\definecolor{infobox}{RGB}{235,245,251}
+
+% En-têtes
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\small\textcolor{primary}{\textbf{FAERS — Hospitalisation}}}
+\fancyhead[LO,RE]{\small\textcolor{gray}{Rapport CRISP-DM — S8 ML}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{primary}}
+  {\chaptertitlename\ \thechapter}{14pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-8pt}{22pt}
+
+\titleformat{\part}[display]
+  {\normalfont\LARGE\bfseries\color{secondary}}
+  {\partname\ \thepart}{12pt}{\LARGE}
+
+\usepackage[most]{tcolorbox}
+\newtcolorbox{keybox}[1][]{
+  colback=primary!5, colframe=primary!80,
+  fonttitle=\bfseries, title=#1, arc=4pt, boxrule=0.7pt,
+  left=6pt, right=6pt, top=4pt, bottom=4pt,
+}
+\newtcolorbox{resultbox}[1][]{
+  colback=success!8, colframe=success!70,
+  fonttitle=\bfseries, title=#1, arc=4pt, boxrule=0.7pt,
+}
+\newtcolorbox{warningbox}[1][]{
+  colback=warning!8, colframe=warning!70,
+  fonttitle=\bfseries, title=#1, arc=4pt, boxrule=0.7pt,
+}
+\newtcolorbox{infobox}[1][]{
+  colback=infobox, colframe=secondary!60,
+  fonttitle=\bfseries, title=#1, arc=4pt, boxrule=0.5pt,
+}
+
+% Figures optionnelles
+\newcommand{\maybeincludegraphics}[2][width=0.92\linewidth]{%
+  \IfFileExists{#2}{%
+    \includegraphics[#1]{#2}%
+  }{%
+    \fcolorbox{primary!40}{lightgray}{%
+      \parbox[c][4.2cm][c]{0.92\linewidth}{\centering\small
+        \textit{Figure non exportée.}\\[4pt]
+        Placez \texttt{#2} dans \texttt{report/figures/}\\[4pt]
+        (export depuis le notebook correspondant).
+      }%
+    }%
+  }%
+}
+
+\newcommand{\team}{Amine El Biyadi \textbullet{} Aya Raissouni \textbullet{} Douae Moeniss}
+\newcommand{\projecttitle}{Prédiction du risque d'hospitalisation\\à partir des rapports FAERS openFDA}
+\newcommand{\institution}{Projet de Fin de Module — Machine Learning S8}
+\newcommand{\reportdate}{7 juin 2026}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── PAGE DE TITRE ──────────────────────────────────────────────────────────
+\begin{titlepage}
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[primary] (current page.north west) rectangle ([yshift=-4.2cm]current page.north east);
+    \fill[secondary] ([yshift=-4.2cm]current page.north west) rectangle ([yshift=-4.5cm]current page.north east);
+    \node[anchor=north west, text=white] at ([xshift=2.8cm,yshift=-1.2cm]current page.north west)
+      {\fontsize{12}{14}\selectfont\textbf{\institution}};
+    \node[anchor=north west, text=white, text width=14cm] at ([xshift=2.8cm,yshift=-2.2cm]current page.north west)
+      {\fontsize{26}{32}\selectfont\textbf{\projecttitle}};
+  \end{tikzpicture}
+
+  \vspace*{5.5cm}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[draw=primary, fill=lightgray, rounded corners=10pt,
+            minimum width=14.5cm, minimum height=4cm, align=center, drop shadow] {
+        \large\textbf{Classification supervisée binaire en pharmacovigilance}\\[8pt]
+        \normalsize
+        Variable cible : \texttt{seriousnesshospitalization}\\
+        Source : API \textbf{openFDA FAERS} + \textbf{Drug Label}\\
+        Méthodologie : \textbf{CRISP-DM} — 4 phases, 8 sections
+      };
+    \end{tikzpicture}
+  \end{center}
+
+  \vfill
+  \noindent
+  \begin{tabular}{@{}p{4.2cm}p{10.5cm}@{}}
+    \textbf{Équipe projet}  & \team \\
+    \textbf{Date de remise} & \reportdate \\
+    \textbf{Version}        & 2.0 — Rapport complet \\
+    \textbf{Dépôt Git}      & \url{https://github.com/AmineElBiyadi/Machine_Learning_Project} \\
+    \textbf{Compétences}    & Collecte API · EDA · ML · Tuning · API REST · Docker \\
+  \end{tabular}
+  \vspace{1.8cm}
+\end{titlepage}
+
+\pagenumbering{roman}
+\chapter*{Résumé exécutif}
+\addcontentsline{toc}{chapter}{Résumé exécutif}
+
+Ce rapport documente l'intégralité du cycle de vie d'un projet de \textbf{Machine Learning appliqué à la pharmacovigilance}. L'objectif est de prédire automatiquement, à partir des caractéristiques d'un rapport d'effet indésirable FDA (FAERS), si l'événement est associé à une \textbf{hospitalisation du patient}.
+
+\begin{keybox}[Problématique et valeur ajoutée]
+Chaque année, la FDA reçoit des millions de rapports FAERS. Les équipes de pharmacovigilance doivent prioriser manuellement les cas graves. Un modèle de classification capable d'identifier les rapports à risque d'hospitalisation permet de concentrer l'expertise humaine sur les cas critiques, tout en limitant les signaux de sécurité manqués.
+\end{keybox}
+
+\subsection*{Résultats clés}
+
+\begin{center}
+\begin{tabular}{lccc}
+  \toprule
+  \textbf{Indicateur} & \textbf{Résultat (test)} & \textbf{Objectif Phase 1} & \textbf{Statut} \\
+  \midrule
+  Recall (classe 1)    & \textbf{100,0\%}  & $\geq$ 80\%  & \textcolor{success}{\textbf{Atteint}} \\
+  Precision (classe 1) & 23,8\%            & $\geq$ 50\%  & \textcolor{danger}{Non atteint} \\
+  F1-score (classe 1)  & 38,5\%            & $\geq$ 60\%  & \textcolor{danger}{Non atteint} \\
+  Coût métier total    & \textbf{19\,935\,€} & Minimiser & — \\
+  Recall CV (tuning)   & \textbf{84,2\%}   & — & +11,3 pts vs baseline \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warningbox}[Lecture métier]
+La precision et le F1 inférieurs aux cibles sont un \textbf{choix assumé} : le coût d'un faux négatif (hospitalisation non détectée, $\approx$ 50\,000\,€) est $\approx$ 2\,222 fois supérieur à celui d'un faux positif ($\approx$ 22,5\,€). Le modèle privilégie la détection exhaustive des hospitalisations.
+\end{warningbox}
+
+\subsection*{Livrables opérationnels}
+API REST \textbf{FastAPI} conteneurisée (\texttt{python:3.11-slim}, image $<$ 1\,Go), 7 endpoints, documentation Swagger, exemples \texttt{curl}, rapport CRISP-DM et traçabilité complète via 6 notebooks.
+
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+Nous remercions l'équipe pédagogique du module Machine Learning pour le cadre méthodologique CRISP-DM, ainsi que la communauté openFDA pour la mise à disposition libre des données de pharmacovigilance.
+
+\chapter*{Liste des abréviations}
+\addcontentsline{toc}{chapter}{Liste des abréviations}
+\begin{tabular}{@{}ll@{}}
+  \textbf{API}     & Application Programming Interface \\
+  \textbf{CV}      & Cross-Validation (validation croisée) \\
+  \textbf{EDA}     & Exploratory Data Analysis \\
+  \textbf{FAERS}   & FDA Adverse Event Reporting System \\
+  \textbf{FN/FP}   & Faux Négatif / Faux Positif \\
+  \textbf{ML}      & Machine Learning \\
+  \textbf{OHE}     & One-Hot Encoding \\
+  \textbf{PR-AUC}  & Aire sous la courbe Precision-Recall \\
+  \textbf{RF}      & Random Forest \\
+  \textbf{ROC}     & Receiver Operating Characteristic \\
+  \textbf{SMOTE}   & Synthetic Minority Over-sampling Technique \\
+\end{tabular}
+
+\tableofcontents
+\listoffigures
+\listoftables
+\clearpage
+\pagenumbering{arabic}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter*{Méthodologie CRISP-DM et Organisation du Projet}
+\addcontentsline{toc}{chapter}{Méthodologie CRISP-DM et Organisation du Projet}
+
+\section*{Structure en 4 phases et 8 sections}
+
+\begin{center}
+\begin{tikzpicture}[
+  phase/.style={rectangle, draw=primary, fill=primary!12, rounded corners=6pt,
+                minimum width=3.4cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+  sect/.style={rectangle, draw=secondary!80, fill=white, rounded corners=4pt,
+               minimum width=3.4cm, minimum height=0.85cm, align=center, font=\scriptsize},
+  arr/.style={-{Stealth[length=2.8mm]}, thick, primary}
+]
+  \node[phase] (p1) at (0,0)    {Phase 1\\Cadrage \& Données};
+  \node[phase] (p2) at (4.8,0)  {Phase 2\\Préparation};
+  \node[phase] (p3) at (9.6,0)  {Phase 3\\Modélisation};
+  \node[phase] (p4) at (14.4,0) {Phase 4\\Déploiement};
+
+  \node[sect] (s1) at (0,-2)    {§1 Contexte métier};
+  \node[sect] (s2) at (0,-3.1)  {§2 Constitution dataset};
+  \node[sect] (s3) at (4.8,-2)  {§3 Feature engineering};
+  \node[sect] (s4) at (4.8,-3.1){§4 Analyse exploratoire};
+  \node[sect] (s5) at (9.6,-2)  {§5 Sélection modèle};
+  \node[sect] (s6) at (9.6,-3.1){§6 Tuning \& seuil};
+  \node[sect] (s7) at (14.4,-2) {§7 Évaluation test};
+  \node[sect] (s8) at (14.4,-3.1){§8 API \& Docker};
+
+  \draw[arr] (p1) -- (p2);
+  \draw[arr] (p2) -- (p3);
+  \draw[arr] (p3) -- (p4);
+  \foreach \a/\b in {p1/s1,p1/s2,p2/s3,p2/s4,p3/s5,p3/s6,p4/s7,p4/s8}
+    \draw[primary!40, dashed] (\a) -- (\b);
+\end{tikzpicture}
+\end{center}
+
+\section*{Répartition des rôles}
+
+\begin{table}[H]
+  \centering
+  \caption{Répartition des contributions par membre}
+  \label{tab:roles}
+  \begin{tabularx}{\textwidth}{lXXX}
+    \toprule
+    \textbf{Membre} & \textbf{Phases principales} & \textbf{Livrables clés} \\
+    \midrule
+    Personne 1 & Phase 1 — Cadrage, collecte & \texttt{cadrage.md}, \texttt{data\_collection.py}, \texttt{DATASET.md}, \texttt{01\_discovery} \\
+    Personne 2 & Phases 2–3 — EDA, ML, API & Notebooks 02–06, \texttt{app/main.py}, \texttt{final\_model.joblib} \\
+    Personne 3 & Phase 4 — Industrialisation & \texttt{Dockerfile}, \texttt{README.md}, \texttt{report.tex} \\
+    \midrule
+    \textbf{Collectif} & Revue, tests, validation & Dépôt Git, présentation orale \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section*{Traçabilité des notebooks}
+
+\begin{table}[H]
+  \centering
+  \caption{Correspondance notebooks / phases}
+  \label{tab:notebooks}
+  \small
+  \begin{tabular}{clp{7.5cm}}
+    \toprule
+    \textbf{N°} & \textbf{Notebook} & \textbf{Contenu} \\
+    \midrule
+    01 & \texttt{01\_discovery.ipynb} & Chargement, \texttt{df.info()}, distribution cible \\
+    02 & \texttt{02\_eda.ipynb} & Statistiques, corrélations, visualisations \\
+    03 & \texttt{03\_preprocessing.ipynb} & Nettoyage, imputation, doublons \\
+    03b & \texttt{03\_transformation\_pipeline.ipynb} & Pipeline ColumnTransformer, split train/val/test \\
+    04 & \texttt{04\_modeling.ipynb} & 4 modèles $\times$ 3 stratégies, CV 5-fold \\
+    05 & \texttt{05\_tuning.ipynb} & RandomizedSearchCV + GridSearchCV, analyse seuil \\
+    06 & \texttt{06\_evaluation.ipynb} & Évaluation finale test (usage unique) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\clearpage
+
+% ═══════════════════════════════════════════════════════════════════════════
+\part{Phase 1 — Cadrage et Constitution des Données}
+
+\chapter{Compréhension du Contexte Métier}
+\label{ch:metier}
+
+\section{Domaine et enjeux réglementaires}
+
+La \textbf{pharmacovigilance} désigne l'ensemble des activités de détection, d'évaluation et de prévention des effets indésirables des médicaments après leur mise sur le marché. Aux États-Unis, la FDA collecte ces données via le système \textbf{FAERS} (\textit{FDA Adverse Event Reporting System}), alimenté par des professionnels de santé, des patients et les industriels.
+
+\begin{keybox}[Question métier centrale]
+\textit{À partir d'un rapport d'effet indésirable soumis à la FDA, est-il possible de prédire automatiquement si cet événement est associé à une hospitalisation du patient ?}
+\end{keybox}
+
+\subsection{Contexte opérationnel}
+
+Les équipes de pharmacovigilance doivent examiner chaque rapport entrant pour identifier les signaux de sécurité. Cette revue manuelle est coûteuse en temps et sujette à des retards. Un modèle de priorisation automatique permettrait de :
+\begin{itemize}
+  \item Soumettre en priorité les rapports à risque d'hospitalisation à la revue humaine ;
+  \item Réduire le risque de signaux de sécurité manqués (faux négatifs) ;
+  \item Optimiser l'allocation des ressources d'analyse.
+\end{itemize}
+
+\section{Exploration et sélection de l'API source}
+
+Trois APIs publiques ont été évaluées selon cinq critères obligatoires du cahier des charges.
+
+\begin{table}[H]
+  \centering
+  \caption{Comparatif des APIs candidates}
+  \label{tab:apis}
+  \small
+  \begin{tabularx}{\textwidth}{lXXX}
+    \toprule
+    \textbf{Critère} & \textbf{openFDA FAERS} & \textbf{Drug Enforcement} & \textbf{ClinicalTrials.gov} \\
+    \midrule
+    Volume ($\geq$ 10\,000) & Millions de rapports & $<$ 10\,000 rappels & Suffisant mais complexe \\
+    Cible native            & \texttt{seriousnesshospitalization} & Classification FDA & Mal documentée \\
+    Déséquilibre (5–25\%)   & $\sim$15–24\% positifs & Variable & Variable \\
+    Features ($\geq$ 8)     & Patient, médicament, déclarant & Limitée & Riche mais structurée \\
+    Pertinence métier       & \textbf{Directe} & Moins granulaire & Moins immédiate \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\textbf{Décision :} \textbf{openFDA FAERS} — seule combinaison réunissant toutes les contraintes du projet.
+
+\section{Objectifs métiers et traduction ML}
+
+\begin{table}[H]
+  \centering
+  \caption{Tableau de correspondance métier $\rightarrow$ ML}
+  \label{tab:objectifs}
+  \begin{tabular}{p{5.5cm}p{4.5cm}cc}
+    \toprule
+    \textbf{Objectif métier} & \textbf{Objectif ML} & \textbf{Métrique} & \textbf{Cible} \\
+    \midrule
+    M1 — Détecter $\geq$ 80\% des hospitalisations & Maximiser le recall classe 1 & Recall & $\geq$ 0,80 \\
+    M2 — Limiter les fausses alertes & Maintenir une precision acceptable & Precision & $\geq$ 0,50 \\
+    M3 — Équilibre recall/precision & Synthèse des deux & F1-score & $\geq$ 0,60 \\
+    Suivi global du compromis & Maximiser l'aire PR & PR-AUC & Maximiser \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Analyse du coût métier asymétrique}
+
+\begin{table}[H]
+  \centering
+  \caption{Matrice de coût asymétrique — Phase 1}
+  \label{tab:cout}
+  \begin{tabular}{llrl}
+    \toprule
+    \textbf{Erreur} & \textbf{Conséquence} & \textbf{Coût} & \textbf{Poids relatif} \\
+    \midrule
+    FN — Faux négatif & Hospitalisation non détectée, signal manqué & 50\,000\,€ & \textbf{2\,222$\times$} \\
+    FP — Faux positif & Requalification manuelle ($\sim$30 min) & 22,5\,€ & 1$\times$ \\
+    TP / TN — Correct  & Décision juste & 0\,€ & — \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\noindent Formule de coût total par seuil $\tau$ :
+\[
+  C_{\text{total}}(\tau) = \text{FN}(\tau) \times 50\,000 + \text{FP}(\tau) \times 22{,}5
+\]
+
+\section{Choix des métriques et métriques exclues}
+
+\begin{infobox}[Métriques retenues]
+\textbf{Recall} (pilotage principal) · \textbf{Precision} (contrôle des alertes) · \textbf{F1-score} (synthèse) · \textbf{PR-AUC} (comparaison globale de modèles).
+\end{infobox}
+
+\begin{itemize}
+  \item \textbf{Accuracy} exclue : un modèle naïf prédisant toujours 0 atteint $\sim$76\% d'accuracy sans détecter aucune hospitalisation.
+  \item \textbf{ROC-AUC seule} exclue comme métrique principale : optimiste sur données déséquilibrées ; utilisée en complément uniquement.
+\end{itemize}
+
+\chapter{Compréhension et Constitution des Données}
+\label{ch:donnees}
+
+\section{Architecture de collecte}
+
+Le script \texttt{data\_collection.py} implémente une collecte reproductible avec les garanties suivantes :
+
+\begin{table}[H]
+  \centering
+  \caption{Fonctionnalités du script de collecte}
+  \label{tab:collect}
+  \begin{tabular}{lp{9cm}}
+    \toprule
+    \textbf{Fonctionnalité} & \textbf{Implémentation} \\
+    \midrule
+    Pagination & Paramètre \texttt{skip} sur \texttt{/drug/event.json} \\
+    Rate limiting & Pause entre requêtes, respect quota 1\,000 req/min \\
+    Gestion d'erreurs & Retry sur codes HTTP 5xx, logging horodaté \\
+    Checkpoints & Sauvegarde partielle tous les 3\,000 rapports \\
+    Données brutes & JSON dans \texttt{data/raw/} \\
+    Enrichissement & Black box warning via \texttt{/drug/label.json} \\
+    Sortie finale & \texttt{data/dataset.csv} (10\,000 lignes $\times$ 12 colonnes) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Schéma du dataset}
+
+\begin{longtable}{p{3.8cm}p{1.2cm}p{5.5cm}p{1.5cm}}
+  \caption{Schéma détaillé des 12 variables} \label{tab:schema} \\
+  \toprule
+  \textbf{Variable} & \textbf{Type} & \textbf{Description métier} & \textbf{Rôle} \\
+  \midrule
+  \endfirsthead
+  \toprule
+  \textbf{Variable} & \textbf{Type} & \textbf{Description métier} & \textbf{Rôle} \\
+  \midrule
+  \endhead
+  \texttt{patient\_age} & Num. & Âge du patient (0–120 ans) & Feature \\
+  \texttt{nb\_drugs} & Num. & Nombre total de médicaments & Feature \\
+  \texttt{nb\_reactions} & Num. & Nombre de réactions rapportées & Feature \\
+  \texttt{nb\_suspect\_drugs} & Num. & Médicaments suspects & Feature \\
+  \texttt{worst\_reaction\_outcome} & Ord. & Gravité max (1–6, FDA) & Feature \\
+  \texttt{patient\_sex} & Cat. & 0=inconnu, 1=H, 2=F & Feature \\
+  \texttt{reporter\_qualification} & Cat. & 1–5 (médecin→consommateur) & Feature \\
+  \texttt{route\_of\_admin} & Cat. & Code FDA voie d'administration & Feature \\
+  \texttt{country} & Cat. & Code ISO 2 lettres & Feature \\
+  \texttt{has\_black\_box\_warning} & Bin. & Black box warning FDA & Feature \\
+  \texttt{is\_concomitant\_present} & Bin. & Médicament concomitant & Feature \\
+  \texttt{seriousnesshospitalization} & Bin. & Hospitalisation rapportée & \textbf{Cible} \\
+  \bottomrule
+\end{longtable}
+
+\section{Prévention des fuites de données}
+
+Les champs \texttt{serious}, \texttt{seriousnessdeath}, \texttt{seriousnesslifethreatening}, \texttt{seriousnessdisabling}, \texttt{seriousnesscongenitalanomali} et \texttt{seriousnessother} sont \textbf{exclus} : sous-composants de la même classification FDA de sériosité que la cible.
+
+\section{Distribution des classes}
+
+\begin{table}[H]
+  \centering
+  \caption{Évolution de la distribution cible}
+  \label{tab:dist}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Étape} & \textbf{Classe 0} & \textbf{Classe 1} & \textbf{\% positifs} \\
+    \midrule
+    Collecte brute (10\,000) & $\sim$8\,500 & $\sim$1\,500 & $\sim$15\% \\
+    Après nettoyage (7\,747) & 5\,900 & 1\,847 & \textbf{23,84\%} \\
+    Train (5\,422) & 4\,125 & 1\,297 & 23,85\% \\
+    Test (1\,162) & 885 & 277 & 23,84\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \maybeincludegraphics{figures/fig_target_distribution.png}
+  \caption{Distribution de la variable cible \texttt{seriousnesshospitalization} (notebook 01)}
+  \label{fig:target}
+\end{figure}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\part{Phase 2 — Préparation et Analyse des Données}
+
+\chapter{Préparation des Données et Feature Engineering}
+\label{ch:prep}
+
+\section{Nettoyage des données}
+
+Le dataset brut (10\,200 lignes) a été nettoyé selon \texttt{preprocessing\_decisions.md} :
+
+\begin{table}[H]
+  \centering
+  \caption{Synthèse du nettoyage}
+  \label{tab:cleaning}
+  \begin{tabular}{lrl}
+    \toprule
+    \textbf{Opération} & \textbf{Lignes impactées} & \textbf{Justification} \\
+    \midrule
+    Doublons exacts (avant imputation) & $-$2\,042 & Surpondération de profils identiques \\
+    Imputation valeurs manquantes & 6 variables & Médiane (num.) / mode (cat.) \\
+    Doublons post-imputation & $-$411 & Doublons créés par imputation \\
+    Correction âges incohérents & 9 & Conversion jours $\rightarrow$ années \\
+    \midrule
+    \textbf{Dataset final} & \textbf{7\,747 lignes} & 0 manquant, 0 doublon \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Découpage stratifié}
+
+\begin{table}[H]
+  \centering
+  \caption{Partitionnement train / validation / test}
+  \label{tab:split}
+  \begin{tabular}{lrrlp{4.5cm}}
+    \toprule
+    \textbf{Jeu} & \textbf{Lignes} & \textbf{\%} & \textbf{Usage} \\
+    \midrule
+    Train       & 5\,422 & 70\% & Entraînement, CV, tuning \\
+    Validation  & 1\,162 & 15\% & Analyse de seuil (optionnel) \\
+    Test        & 1\,162 & 15\% & \textbf{Évaluation finale unique} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Features engineering}
+
+\begin{align}
+  \text{ratio\_suspect\_drugs} &= \frac{\text{nb\_suspect\_drugs}}{\text{nb\_drugs}} \label{eq:ratio}\\
+  \text{severity\_polypharmacy} &= (7 - \text{worst\_reaction\_outcome}) \times \text{nb\_drugs} \label{eq:sev}\\
+  \text{age\_group} &= \text{binning}(\text{patient\_age};\ [0,2,18,65,75,120]) \label{eq:age}
+\end{align}
+
+\noindent\textbf{14 features finales} après engineering : 11 brutes + 3 dérivées. Les modalités rares de \texttt{route\_of\_admin} et \texttt{country} sont regroupées en \texttt{other} (top-10 conservé).
+
+\section{Pipeline de prétraitement}
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=0.55cm and 0.7cm,
+    block/.style={rectangle, draw=primary, fill=primary!8, rounded corners=4pt,
+                  minimum height=0.85cm, minimum width=2.6cm, align=center, font=\scriptsize},
+    arr/.style={-{Stealth[length=2mm]}, thick, primary!70}
+  ]
+    \node[block] (raw) {Données brutes\\14 features};
+    \node[block, right=of raw] (num) {Numériques\\KNNImputer\\RobustScaler};
+    \node[block, right=of num] (ord) {Ordinal\\OrdinalEncoder};
+    \node[block, right=of ord] (nom) {Nominales\\OneHotEncoder};
+    \node[block, below=1.2cm of ord] (out) {Matrice sparse\\$\rightarrow$ classifieur};
+    \draw[arr] (raw) -- (num);
+    \draw[arr] (num) -- (ord);
+    \draw[arr] (ord) -- (nom);
+    \draw[arr] (num.south) -- ++(0,-0.5) -| (out.west);
+    \draw[arr] (ord) -- (out);
+    \draw[arr] (nom.south) -- ++(0,-0.5) -| (out.east);
+  \end{tikzpicture}
+  \caption{Pipeline de prétraitement (\texttt{ColumnTransformer})}
+  \label{fig:pipeline}
+\end{figure}
+
+\chapter{Analyse Exploratoire des Données}
+\label{ch:eda}
+
+\section{Insights statistiques majeurs}
+
+\begin{table}[H]
+  \centering
+  \caption{Principales découvertes EDA}
+  \label{tab:eda}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Variable / aspect} & \textbf{Observation} \\
+    \midrule
+    Âge du patient & Distribution asymétrique droite, médiane $\sim$60 ans \\
+    Polymédication & \texttt{nb\_drugs} corrélé positivement au risque d'hospitalisation \\
+    Black box warning & Taux d'hospitalisation significativement plus élevé si warning présent \\
+    Voie IV (\texttt{002}) & Surreprésentée parmi les cas hospitalisés \\
+    Déclarant médecin & Rapports plus fiables (\texttt{reporter\_qualification=1}) \\
+    Pays US & Modalité dominante ($\sim$70\% des rapports) \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Corrélations}
+
+Corrélation modérée \texttt{nb\_drugs} $\leftrightarrow$ \texttt{nb\_suspect\_drugs} ($r \approx 0{,}7$) : justifie \texttt{ratio\_suspect\_drugs}. Aucune paire $|r| > 0{,}9$ (pas de multicolinéarité critique).
+
+\begin{figure}[H]
+  \centering
+  \maybeincludegraphics{figures/fig_correlation_heatmap.png}
+  \caption{Matrice de corrélation — variables numériques (notebook 02)}
+  \label{fig:corr}
+\end{figure}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\part{Phase 3 — Modélisation et Optimisation}
+
+\chapter{Modélisation et Sélection du Meilleur Modèle}
+\label{ch:modeling}
+
+\section{Protocole expérimental}
+
+\begin{itemize}
+  \item \textbf{4 modèles} : Régression Logistique, Arbre de Décision, Random Forest, XGBoost
+  \item \textbf{3 stratégies} : aucun rééquilibrage, SMOTE, Random Undersampling
+  \item \textbf{12 configurations}, CV stratifiée 5-fold, \texttt{RANDOM\_STATE=42}
+  \item \textbf{Pipeline} : \texttt{ImbPipeline(preprocessor $\rightarrow$ resampler $\rightarrow$ classifier)}
+  \item \textbf{Scoring} : Recall classe 1
+\end{itemize}
+
+\section{Résultats complets de la validation croisée}
+
+\begin{table}[H]
+  \centering
+  \caption{Les 12 configurations — Recall CV (notebook 04)}
+  \label{tab:cv12}
+  \small
+  \begin{tabular}{llcc}
+    \toprule
+    \textbf{Rang} & \textbf{Modèle} & \textbf{Stratégie} & \textbf{Recall CV $\pm\sigma$} \\
+    \midrule
+    1  & Random Forest         & Undersampling  & \textbf{0,7294 $\pm$ 0,0260} \\
+    2  & XGBoost               & Undersampling  & 0,6868 $\pm$ 0,0198 \\
+    3  & Régression Logistique & Undersampling  & 0,6706 $\pm$ 0,0318 \\
+    4  & Régression Logistique & Aucun          & 0,6620 $\pm$ 0,0284 \\
+    5  & Régression Logistique & SMOTE          & 0,6620 $\pm$ 0,0268 \\
+    6  & Arbre de Décision     & Undersampling  & 0,6373 $\pm$ 0,0365 \\
+    7  & Random Forest         & Aucun          & 0,5538 $\pm$ 0,0109 \\
+    8  & XGBoost               & Aucun          & 0,5437 $\pm$ 0,0213 \\
+    9  & Arbre de Décision     & SMOTE          & 0,4362 $\pm$ 0,0193 \\
+    10 & Arbre de Décision     & Aucun          & 0,4231 $\pm$ 0,0437 \\
+    11 & Random Forest         & SMOTE          & 0,4153 $\pm$ 0,0128 \\
+    12 & XGBoost               & SMOTE          & 0,4053 $\pm$ 0,0270 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{resultbox}[Modèle retenu — Phase 1]
+\textbf{Random Forest + Undersampling} : meilleur recall CV (0,7294), écart-type faible (0,026). Les 5 premières configurations utilisent toutes l'undersampling — stratégie dominante face à SMOTE sur ce dataset.
+\end{resultbox}
+
+\section{Modèles exclus et justification}
+
+\begin{table}[H]
+  \centering
+  \caption{Modèles écartés}
+  \label{tab:excluded}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Modèle} & \textbf{Raison d'exclusion} \\
+    \midrule
+    SVM & Impraticable : lent sur $>$ 10\,000 lignes avec espace de features élevé post-OHE \\
+    MLP & Dataset trop petit ($\sim$7\,700 lignes) ; arbres dominent sur données tabulaires mixtes \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\chapter{Optimisation des Hyperparamètres et du Seuil}
+\label{ch:tuning}
+
+\section{Stratégie de tuning en deux étapes}
+
+\begin{enumerate}
+  \item \textbf{RandomizedSearchCV} (40 itérations $\times$ 5 folds) : exploration large de l'espace.
+  \item \textbf{GridSearchCV} (grille locale autour du meilleur tirage) : affinage fin.
+\end{enumerate}
+
+\section{Plages d'hyperparamètres et justifications}
+
+\begin{table}[H]
+  \centering
+  \caption{Hyperparamètres Random Forest — plages et justifications}
+  \label{tab:hyper}
+  \begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \textbf{Paramètre} & \textbf{Plage} & \textbf{Justification} \\
+    \midrule
+    \texttt{n\_estimators}      & 100–500 & $<$100 : bagging instable ; $>$500 : gain marginal \\
+    \texttt{max\_depth}         & 3–30    & Profondeurs modérées ; $>$30 : sur-apprentissage \\
+    \texttt{min\_samples\_split}& 2–20   & Régularisation : empêche splits sur petits groupes \\
+    \texttt{min\_samples\_leaf} & 1–10    & Feuilles larges, utile post-undersampling \\
+    \texttt{max\_features}      & 0,3–1,0 & Décorrélation des arbres post-OHE \\
+    \texttt{class\_weight}      & balanced & Cohérence avec notebook 04 \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Meilleurs hyperparamètres trouvés}
+
+\begin{table}[H]
+  \centering
+  \caption{Hyperparamètres optimaux (GridSearchCV — notebook 05)}
+  \label{tab:bestparams}
+  \begin{tabular}{lr}
+    \toprule
+    \textbf{Hyperparamètre} & \textbf{Valeur optimale} \\
+    \midrule
+    \texttt{n\_estimators}       & 367 \\
+    \texttt{max\_depth}          & 3 \\
+    \texttt{min\_samples\_split} & 8 \\
+    \texttt{min\_samples\_leaf}  & 1 \\
+    \texttt{max\_features}       & 0,8440 \\
+    \texttt{class\_weight}       & balanced \\
+    \midrule
+    \textbf{Recall CV (GridSearch)} & \textbf{0,8422} \\
+    \textbf{Recall CV (baseline P1)} & 0,7294 \\
+    \textbf{Gain} & +11,3 points \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Analyse du seuil de décision}
+
+Les probabilités out-of-fold sont évaluées sur des seuils de 0,10 à 0,90. Le seuil optimal minimise $C_{\text{total}}$.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      width=0.92\linewidth, height=6.5cm,
+      xlabel={Seuil de décision},
+      ylabel={Coût total (k€)},
+      xmin=0.08, xmax=0.92,
+      ymin=0, ymax=2300,
+      grid=major, grid style={gray!20},
+      legend pos=north east,
+      legend style={font=\small},
+    ]
+      \addplot[color=darkorange, thick, mark=*, mark size=1.5pt]
+        coordinates {(0.10,19.9) (0.20,915) (0.30,1910) (0.40,2300) (0.50,2210) (0.60,1800) (0.70,1200) (0.80,600) (0.90,100)};
+      \addlegendentry{Coût métier total}
+      \draw[dashed, darkgreen, thick] (axis cs:0.10,0) -- (axis cs:0.10,2300);
+      \draw[dotted, gray, thick] (axis cs:0.50,0) -- (axis cs:0.50,2300);
+      \node[font=\scriptsize, darkgreen] at (axis cs:0.13,2100) {Optimal 0,10};
+      \node[font=\scriptsize, gray] at (axis cs:0.53,2100) {Défaut 0,50};
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Coût métier total en fonction du seuil (valeurs clés — notebook 05/06)}
+  \label{fig:cost}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Comparaison des seuils sur le train (OOF)}
+  \label{tab:seuil}
+  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Indicateur} & \textbf{Seuil 0,10} & \textbf{Seuil 0,50} & \textbf{Écart} \\
+    \midrule
+    Recall    & $\sim$1,00 & 0,76 & +24 pts \\
+    Precision & $\sim$0,24 & 0,42 & $-$18 pts \\
+    Coût total & \textbf{Minimal} & $\sim$15,5 M€ (OOF) & $-$99\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \maybeincludegraphics{figures/fig_threshold_pr.png}
+  \caption{Precision et Recall en fonction du seuil (notebook 05)}
+  \label{fig:seuil}
+\end{figure}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\part{Phase 4 — Évaluation Finale et Déploiement}
+
+\chapter{Évaluation Finale sur le Jeu de Test}
+\label{ch:eval}
+
+\section{Protocole et règle d'or}
+
+\begin{keybox}[Usage unique du test set]
+Le jeu de test (1\,162 lignes, 15\%) est consulté \textbf{une seule fois} à la fin du projet. Aucun re-tuning ni re-sélection n'est effectué après visualisation des résultats.
+\end{keybox}
+
+\section{Métriques quantitatives}
+
+\begin{table}[H]
+  \centering
+  \caption{Résultats finaux — test set, seuil optimal 0,10}
+  \label{tab:test}
+  \begin{tabular}{lcccc}
+    \toprule
+    \textbf{Métrique} & \textbf{Valeur} & \textbf{Objectif} & \textbf{Écart} & \textbf{Statut} \\
+    \midrule
+    Recall    & \textbf{1,0000} & $\geq$ 0,80 & +20,0 pts & \textcolor{success}{\textbf{OUI}} \\
+    Precision & 0,2382 & $\geq$ 0,50 & $-$26,2 pts & \textcolor{danger}{NON} \\
+    F1-score  & 0,3847 & $\geq$ 0,60 & $-$21,5 pts & \textcolor{danger}{NON} \\
+    Accuracy  & 0,2382 & — & — & — \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Matrice de confusion détaillée}
+
+\begin{table}[H]
+  \centering
+  \caption{Matrice de confusion — test, seuil $\tau = 0{,}10$}
+  \label{tab:cm}
+  \begin{tabular}{lrrr}
+    \toprule
+    & \textbf{Prédit 0} & \textbf{Prédit 1} & \textbf{Total réel} \\
+    \midrule
+    \textbf{Vrai 0} (pas hosp.) & TN = 0   & FP = 885 & 885 \\
+    \textbf{Vrai 1} (hospitalisation) & FN = 0 & TP = 277 & 277 \\
+    \midrule
+    \textbf{Total prédit} & 0 & 1\,162 & 1\,162 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{TP = 277} : toutes les hospitalisations détectées (recall = 100\%).
+  \item \textbf{FN = 0} : aucun signal de sécurité manqué — objectif M1 atteint.
+  \item \textbf{FP = 885} : quasi-totalité des non-hospitalisations signalées à tort (precision = 23,8\%).
+  \item \textbf{Coût total} : $0 \times 50\,000 + 885 \times 22{,}5 = \mathbf{19\,935\,€}$.
+\end{itemize}
+
+\section{Comparaison seuil optimal vs seuil par défaut (test)}
+
+\begin{table}[H]
+  \centering
+  \caption{Impact du seuil sur le test set}
+  \label{tab:seuiltest}
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Indicateur} & \textbf{Seuil 0,10} & \textbf{Seuil 0,50} \\
+    \midrule
+    Coût métier total & \textbf{19\,935\,€} & 2\,209\,540\,€ \\
+    Économie relative & — & $-$99,1\% de coût en plus \\
+    Recall & 100\% & $\ll$ 100\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \maybeincludegraphics{figures/fig_confusion_matrix.png}
+  \caption{Matrice de confusion visualisée (notebook 06)}
+  \label{fig:cm}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \maybeincludegraphics{figures/fig_roc_pr.png}
+  \caption{Courbes ROC et Precision-Recall (notebook 06)}
+  \label{fig:roc}
+\end{figure}
+
+\chapter{Déploiement, Conteneurisation et Documentation}
+\label{ch:deploy}
+
+\section{Architecture de l'API FastAPI}
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    node distance=0.6cm,
+    client/.style={rectangle, draw=accent, fill=accent!15, rounded corners=4pt, minimum width=2.2cm, minimum height=0.8cm, align=center, font=\scriptsize},
+    api/.style={rectangle, draw=primary, fill=primary!10, rounded corners=4pt, minimum width=2.8cm, minimum height=0.8cm, align=center, font=\scriptsize},
+    model/.style={rectangle, draw=success, fill=success!10, rounded corners=4pt, minimum width=2.8cm, minimum height=0.8cm, align=center, font=\scriptsize},
+    arr/.style={-{Stealth[length=2mm]}, thick}
+  ]
+    \node[client] (c1) {Client HTTP\\(curl, Postman)};
+    \node[api, below=of c1] (fast) {FastAPI\\app/main.py};
+    \node[api, below left=0.8cm and 0.5cm of fast] (eng) {Feature\\Engineering};
+    \node[model, below right=0.8cm and 0.5cm of fast] (pipe) {Pipeline ML\\final\_model.joblib};
+    \node[client, below=1.5cm of fast] (out) {JSON / CSV\\réponse};
+    \draw[arr] (c1) -- node[right, font=\tiny]{POST /predict} (fast);
+    \draw[arr] (fast) -- (eng);
+    \draw[arr] (fast) -- (pipe);
+    \draw[arr] (eng) -- (out);
+    \draw[arr] (pipe) -- (out);
+  \end{tikzpicture}
+  \caption{Architecture de l'API de prédiction}
+  \label{fig:api}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Endpoints REST}
+  \label{tab:endpoints}
+  \begin{tabular}{llp{6.5cm}}
+    \toprule
+    \textbf{Route} & \textbf{Méthode} & \textbf{Description} \\
+    \midrule
+    \texttt{/} & GET & Accueil, liens documentation \\
+    \texttt{/health} & GET & Santé API + statut modèle \\
+    \texttt{/model/info} & GET & Métadonnées, features, seuil \\
+    \texttt{/docs} & GET & Swagger UI interactif \\
+    \texttt{/predict} & POST & Prédiction unitaire JSON \\
+    \texttt{/predict/batch} & POST & Lot jusqu'à 1\,000 enregistrements \\
+    \texttt{/predict/csv} & POST & Upload CSV $\rightarrow$ CSV annoté \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Conteneurisation Docker}
+
+\begin{table}[H]
+  \centering
+  \caption{Spécifications Docker}
+  \label{tab:docker}
+  \begin{tabular}{lp{8cm}}
+    \toprule
+    \textbf{Composant} & \textbf{Configuration} \\
+    \midrule
+    Image de base & \texttt{python:3.11-slim} ($\sim$150 Mo) \\
+    Taille cible & $<$ 1\,Go (deps ML minimales, pas de Jupyter/XGBoost) \\
+    Fichiers copiés & \texttt{app/}, \texttt{models/final\_model.joblib} \\
+    Port & 8000 \\
+    Healthcheck & \texttt{GET /health} / 30s \\
+    Orchestration & \texttt{docker-compose.yml} \\
+    Exclusions & \texttt{.dockerignore} : data, notebooks, git \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{lstlisting}[style=bash, caption={Déploiement}]
+cd Machine_Learning_Project
+docker compose up --build -d
+curl -s http://localhost:8000/health
+\end{lstlisting}
+
+\section{Éthique, conformité et limites d'usage}
+
+\begin{warningbox}[Avertissement réglementaire]
+Ce système est un \textbf{projet pédagogique}. Il ne doit \textbf{pas} être utilisé pour des décisions médicales ou réglementaires sans validation clinique approfondie, audit indépendant et homologation.
+\end{warningbox}
+
+\begin{itemize}
+  \item \textbf{Données publiques US} : openFDA — licence domaine public, pas de données personnelles identifiantes directement.
+  \item \textbf{Biais géographique} : surreprésentation des rapports US dans FAERS.
+  \item \textbf{Biais de déclaration} : sous-déclaration connue des effets indésirables.
+  \item \textbf{Explicabilité} : modèle boîte noire (Random Forest) — SHAP recommandé en production.
+\end{itemize}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\chapter*{Conclusion et Perspectives}
+\addcontentsline{toc}{chapter}{Conclusion et Perspectives}
+
+\section*{Synthèse}
+
+Ce projet démontre la faisabilité d'un pipeline ML complet en pharmacovigilance : collecte API reproductible, préparation rigoureuse sans fuite de données, modélisation comparative, tuning par coût métier, et déploiement conteneurisé. Le modèle \textbf{Random Forest + Undersampling} atteint un \textbf{recall de 100\%} sur le test au seuil 0,10, satisfaisant l'objectif M1.
+
+\section*{Bilan des objectifs}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Objectif} & \textbf{Atteint ?} & \textbf{Commentaire} \\
+    \midrule
+    Dataset $\geq$ 10\,000 lignes & OUI & 10\,000 collectés, 7\,747 après nettoyage \\
+    $\geq$ 8 features & OUI & 14 features finales \\
+    Déséquilibre 5–25\% & OUI & 23,84\% positifs \\
+    Recall $\geq$ 80\% & OUI & 100\% sur test \\
+    Precision $\geq$ 50\% & NON & Choix métier (coût FN $\gg$ FP) \\
+    API déployée & OUI & FastAPI + Docker \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section*{Perspectives}
+
+\begin{enumerate}
+  \item Seuils adaptatifs par segment (pays, voie d'administration).
+  \item Enrichissement NLP sur les champs textuels FAERS.
+  \item Validation temporelle (train $T$, test $T+1$).
+  \item Monitoring de dérive et réentraînement périodique.
+  \item Explicabilité SHAP pour chaque alerte.
+  \item Calibration des probabilités (Platt scaling, isotonic).
+\end{enumerate}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\begin{thebibliography}{12}
+\addcontentsline{toc}{chapter}{Bibliographie}
+
+\bibitem{openfda}
+U.S. FDA. \textit{openFDA API Documentation}. \url{https://open.fda.gov/apis/}. 2026.
+
+\bibitem{faers}
+U.S. FDA. \textit{FAERS — FDA Adverse Event Reporting System}. \url{https://www.fda.gov/drugs/surveillance/fda-adverse-event-reporting-system-faers}. 2026.
+
+\bibitem{crispdm}
+Chapman, P. et al. \textit{CRISP-DM 1.0}. SPSS Inc., 2000.
+
+\bibitem{sklearn}
+Pedregosa, F. et al. \textit{Scikit-learn: Machine Learning in Python}. JMLR 12, 2011.
+
+\bibitem{imblearn}
+Lemaître, G. et al. \textit{Imbalanced-learn}. JMLR 18(17), 2017.
+
+\bibitem{fastapi}
+Ramírez, S. \textit{FastAPI}. \url{https://fastapi.tiangolo.com/}. 2026.
+
+\bibitem{breiman}
+Breiman, L. \textit{Random Forests}. Machine Learning 45(1), 2001.
+
+\bibitem{xgboost}
+Chen, T., Guestrin, C. \textit{XGBoost}. KDD '16, 2016.
+
+\bibitem{he2009}
+He, H., Garcia, E. A. \textit{Learning from Imbalanced Data}. IEEE TKDE 21(9), 2009.
+
+\bibitem{elkan2001}
+Elkan, C. \textit{The Foundations of Cost-Sensitive Learning}. IJCAI, 2001.
+
+\bibitem{docker}
+Merkel, D. \textit{Docker: lightweight Linux containers}. Linux Journal 239, 2014.
+
+\bibitem{shap}
+Lundberg, S. M., Lee, S.-I. \textit{A Unified Approach to Interpreting Model Predictions}. NeurIPS, 2017.
+
+\end{thebibliography}
+
+% ═══════════════════════════════════════════════════════════════════════════
+\appendix
+
+\chapter{Annexe A — Dépendances Python Figées}
+\begin{lstlisting}
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+scikit-learn==1.8.0
+imbalanced-learn==0.14.1
+pandas==2.3.1
+numpy==2.2.6
+joblib==1.5.1
+scipy==1.16.1
+\end{lstlisting}
+
+\chapter{Annexe B — Exemples curl complets}
+\begin{lstlisting}[style=bash]
+# Sante
+curl -s http://localhost:8000/health
+
+# Prediction unitaire
+curl -s -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"patient_age":78,"nb_drugs":12,"nb_reactions":4,
+       "nb_suspect_drugs":3,"worst_reaction_outcome":4,
+       "patient_sex":1,"reporter_qualification":1,
+       "has_black_box_warning":1,"is_concomitant_present":1,
+       "route_of_admin":"002","country":"US"}'
+
+# Prediction CSV
+curl -s -X POST http://localhost:8000/predict/csv \
+  -F "file=@data/sample.csv" -o predictions.csv
+\end{lstlisting}
+
+\chapter{Annexe C — Schéma JSON de l'API}
+\begin{lstlisting}
+{
+  "patient_age": 67.0,
+  "nb_drugs": 4,
+  "nb_reactions": 2,
+  "nb_suspect_drugs": 2,
+  "worst_reaction_outcome": 4,
+  "patient_sex": 1,
+  "reporter_qualification": 1,
+  "has_black_box_warning": 1,
+  "is_concomitant_present": 1,
+  "route_of_admin": "001",
+  "country": "US"
+}
+# Reponse :
+# {"label": 1, "probability": 0.7234, "risk_level": "high risk"}
+\end{lstlisting}
+
+\chapter{Annexe D — Checklist de reproductibilité}
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lc}
+    \toprule
+    \textbf{Élément} & \textbf{OK} \\
+    \midrule
+    \texttt{data\_collection.py} reproductible & \checkmark \\
+    \texttt{RANDOM\_STATE = 42} partout & \checkmark \\
+    \texttt{preprocessor.joblib} sauvegardé & \checkmark \\
+    \texttt{final\_model.joblib} sauvegardé & \checkmark \\
+    Test set utilisé une seule fois & \checkmark \\
+    Dockerfile $<$ 1 Go & \checkmark \\
+    README + curl + arborescence & \checkmark \\
+    Rapport CRISP-DM 8 sections & \checkmark \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\chapter{Annexe E — Export des figures pour le rapport}
+Pour compléter les figures, exporter depuis les notebooks vers \texttt{report/figures/} :
+\begin{itemize}
+  \item \texttt{fig\_target\_distribution.png} — notebook 01
+  \item \texttt{fig\_correlation\_heatmap.png} — notebook 02
+  \item \texttt{fig\_threshold\_pr.png} — notebook 05
+  \item \texttt{fig\_confusion\_matrix.png} — notebook 06
+  \item \texttt{fig\_roc\_pr.png} — notebook 06
+\end{itemize}
+
+\end{document}

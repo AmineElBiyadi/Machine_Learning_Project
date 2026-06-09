@@ -1,0 +1,17 @@
+# --- API runtime (Personne 2) ---
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+python-multipart==0.0.20
+pydantic==2.11.7
+starlette==0.47.2
+
+# --- ML pipeline (Personne 1 & 2) ---
+scikit-learn==1.8.0
+imbalanced-learn==0.14.1
+joblib==1.5.1
+numpy==2.2.6
+pandas==2.3.1
+scipy==1.16.1
+
+# --- Data collection (optional, not required at runtime) ---
+requests==2.32.4
