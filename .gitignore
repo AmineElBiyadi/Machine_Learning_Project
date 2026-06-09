@@ -51,7 +51,6 @@ Thumbs.db
 # Model files
 *.h5
 *.pkl
-*.joblib
 *.onnx
 *.pt
 *.pth
