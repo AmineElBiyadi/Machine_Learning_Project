@@ -1,0 +1,10 @@
+patient_age,nb_drugs,nb_reactions,worst_reaction_outcome,nb_suspect_drugs,patient_sex,reporter_qualification,route_of_admin,country,has_black_box_warning,is_concomitant_present,ratio_suspect_drugs,age_group,severity_polypharmacy
+25.0,1,3,6.0,1,1.0,5.0,048,US,0,0,1.0,adulte,1.0
+27.0,8,5,3.0,1,2.0,5.0,015,US,1,1,0.125,adulte,32.0
+24.0,2,1,3.0,2,2.0,1.0,042,ES,1,0,1.0,adulte,8.0
+60.0,8,10,6.0,7,0.0,3.0,048,US,1,1,0.875,adulte,8.0
+60.0,7,4,1.0,2,2.0,1.0,048,US,0,1,0.2857142857142857,adulte,42.0
+61.0,1,1,5.0,1,2.0,1.0,065,US,1,0,1.0,adulte,2.0
+60.0,1,1,1.0,1,1.0,5.0,048,US,0,0,1.0,adulte,6.0
+76.0,1,6,6.0,1,2.0,2.0,048,US,1,0,1.0,tres_age,1.0
+69.0,1,1,6.0,1,2.0,3.0,058,NL,0,0,1.0,senior,1.0

@@ -1,6 +1,6 @@
 # FAERS Hospitalization Prediction API
 
-> **Projet Machine Learning — S8**  
+> **Projet Machine Learning**
 > Prédiction automatique du risque d'hospitalisation à partir des rapports d'effets indésirables openFDA (FAERS).
 
 | Élément | Valeur |
@@ -9,7 +9,7 @@
 | **Domaine** | Pharmacovigilance |
 | **Problème** | Classification binaire supervisée |
 | **Cible** | `seriousnesshospitalization` (0 = pas d'hospitalisation, 1 = hospitalisation) |
-| **API source** | [openFDA FAERS](https://open.fda.gov/apis/drug/event/) |
+| **API source** | [openFDA FAERS](https://open.fda.gov/apis/drug/event/)  et [openFDA Drug Label](https://open.fda.gov/apis/drug/label/) |
 | **Modèle** | Random Forest + Undersampling (pipeline scikit-learn) |
 | **Métrique principale** | Recall (classe 1) ≥ 0,80 |
 
@@ -17,7 +17,6 @@
 
 ## Captures d'écran
 
-> Remplacez les chemins ci-dessous par vos captures une fois générées (`docs/screenshots/`).
 
 | Description | Fichier |
 |---|---|
@@ -28,6 +27,10 @@
 | Matrice de confusion test (notebook 06) | `docs/screenshots/confusion_matrix_test.png` |
 
 ![Swagger UI — /docs](docs/screenshots/swagger_docs.png)
+![Prédiction patient à risque](docs/screenshots/predict_high_risk.png)
+![Health Check](docs/screenshots/health_check.png)
+![Threshold Analysis](docs/screenshots/threshold_analysis.png)
+![Confusion Matrix Test](docs/screenshots/confusion_matrix_test.png)
 
 ---
 
@@ -55,8 +58,6 @@ Machine_Learning_Project/
 │   └── 06_evaluation.ipynb      # Phase 4 — évaluation finale sur test (usage unique)
 ├── scripts/
 │   └── build_feature_pipeline.py
-├── report/
-│   └── report.tex               # Rapport final CRISP-DM (compiler en PDF)
 ├── data_collection.py           # Script reproductible de collecte openFDA
 ├── cadrage.md                   # Fiche de cadrage Phase 1
 ├── DATASET.md                   # Documentation du dataset
@@ -287,15 +288,21 @@ Les features engineering (`ratio_suspect_drugs`, `severity_polypharmacy`, `age_g
 
 ---
 
-## Compiler le rapport PDF
+## Limites connues du modèle
 
-```bash
-cd report
-pdflatex report.tex
-pdflatex report.tex   # deuxième passe pour la table des matières
-```
+Ce modèle a été développé dans un cadre pédagogique et présente les limites suivantes :
+
+1. **Biais géographique** : Données principalement issues des États-Unis (FDA), moins représentatif d'autres pays
+2. **Bas précision** : Seuil optimisé pour le recall (100 %) entraîne une faible précision (23,8 %) et donc de nombreux faux positifs
+3. **Données historiques** : Modèle entraîné sur des données passées, peut ne pas refléter les nouveaux médicaments ou tendances
+4. **Pas de validation médicale** : Ne remplace pas l'avis d'un professionnel de santé
+5. **Features limitées** : Basé uniquement sur les variables disponibles dans FAERS, sans données cliniques détaillées
+
+**Important** : Ce projet est à des fins éducatives uniquement. **Ne pas utiliser pour des décisions médicales.**
 
 ---
+
+
 
 ## Arrêter les services Docker
 
@@ -307,13 +314,41 @@ docker compose down
 
 ## Licence & données
 
+### Licence
+Ce projet est sous licence **MIT** - voir ci-dessous pour plus de détails.
+
+### Données
 - Données : [openFDA](https://open.fda.gov/) — domaine public (US Government Works).
 - Ce projet est réalisé dans un cadre pédagogique. **Ne pas utiliser pour des décisions médicales.**
+
+### Licence MIT
+```
+MIT License
+
+Copyright (c) 2024 Amine El Biyadi, Aya Raissouni, Douae Moeniss
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ---
 
 ## Références
 
-- [cadrage.md](cadrage.md) — objectifs métiers et métriques
-- [DATASET.md](DATASET.md) — schéma et distribution des classes
+
 - [openFDA API Documentation](https://open.fda.gov/apis/)
